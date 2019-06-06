@@ -66,10 +66,11 @@ namespace DatingApp.API.Controllers
                     _config.GetSection("AppSettings:Token").Value));
 
             // Hashing the key
-            var creds = new SigningCredentials(key,SecurityAlgorithms.HmacSha512Signature);
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
             // Create the token descriptor where we pass the claims, expiry date (24 hrs), and the credentials
-            var tokenDescriptor = new SecurityTokenDescriptor{
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
                 Subject = new ClaimsIdentity(claims),
                 Expires = DateTime.Now.AddDays(1),
                 SigningCredentials = creds
@@ -77,14 +78,16 @@ namespace DatingApp.API.Controllers
 
             // Creating a jwt security token handler object
             var tokenHandler = new JwtSecurityTokenHandler();
-            
+
             // Store it in the token variable
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
             // In the response, we send Ok + the new token as a new object
-            return Ok(new {
+            return Ok(new
+            {
                 token = tokenHandler.WriteToken(token)
             });
+
         }
     }
 }
