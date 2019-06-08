@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-md navbar-dark bg-dark">
+<nav class="navbar navbar-expand-md navbar-dark bg-primary">
   <a class="navbar-brand" href="#">Dating App</a>
   <div class="container">
     
@@ -15,7 +15,7 @@
     </ul>
   
   <!--Display this at the end of navbar when user is logged in (loggedIn() returns true on a token in localStorage)-->
-  <div class="container pull-right">
+  <div class="login-container pull-right">
   <div *ngIf="loggedIn()" class="dropdown pull-right" dropdown>
       <a class="dropdown-toggle text-light" dropdownToggle>
         Welcome {{authService.decodedToken.unique_name | titlecase}}
