@@ -15,7 +15,7 @@
         <!--NOTE: Added mx-auto for automatic recentering, might cause problems-->
         <img
           class="card-img-top img-thumbnail mx-auto"
-          src="{{ photoUrl }}"
+          src="{{ photoUrl || '../../../assets/user.png'}}"
           alt="{{ user.knownAs }}"
         />
         <div class="card-body">

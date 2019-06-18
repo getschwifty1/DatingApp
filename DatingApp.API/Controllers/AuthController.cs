@@ -28,65 +28,62 @@ namespace DatingApp.API.Controllers
             _repo = repo;
         }
 
-    [HttpPost("register")]
-    public async Task<IActionResult> Register(UserForRegisterDto userForRegisterDto)
-    {
-
-        userForRegisterDto.Username = userForRegisterDto.Username.ToLower();
-
-        if (await _repo.UserExists(userForRegisterDto.Username))
-            return BadRequest("Username already exists");
-
-        var userToCreate = new User
+        [HttpPost("register")]
+        public async Task<IActionResult> Register(UserForRegisterDto userForRegisterDto)
         {
-            UserName = userForRegisterDto.Username
-        };
 
-        var createdUser = await _repo.Register(userToCreate, userForRegisterDto.Password);
+            userForRegisterDto.Username = userForRegisterDto.Username.ToLower();
 
-        // To Fix once we have a GetUser route
-        return StatusCode(201);
-    }
+            if (await _repo.UserExists(userForRegisterDto.Username))
+                return BadRequest("Username already exists");
 
-    [HttpPost("login")]
-    public async Task<IActionResult> Login(UserForLoginDto userForRegisterDto)
-    {
-        var userFromRepo = await _repo.Login(userForRegisterDto.Username.ToLower(), userForRegisterDto.Password);
+            var userToCreate = _mapper.Map<User>(userForRegisterDto);
 
-        if (userFromRepo == null)
-            return Unauthorized();
+            var createdUser = await _repo.Register(userToCreate, userForRegisterDto.Password);
+            var userToReturn = _mapper.Map<UserForDetailedDto>(createdUser);
+            // To Fix once we have a GetUser route
+            return CreatedAtRoute("GetUser", new { controller = "Users", id = createdUser.Id }, userToReturn);
+        }
 
-        // Token building process
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(UserForLoginDto userForRegisterDto)
+        {
+            var userFromRepo = await _repo.Login(userForRegisterDto.Username.ToLower(), userForRegisterDto.Password);
 
-        // Contains 2 claims made of userId and username
-        var claims = new[]{
+            if (userFromRepo == null)
+                return Unauthorized();
+
+            // Token building process
+
+            // Contains 2 claims made of userId and username
+            var claims = new[]{
                 new Claim(ClaimTypes.NameIdentifier, userFromRepo.Id.ToString()),
                 new Claim(ClaimTypes.Name, userFromRepo.UserName)
             };
 
-        // Creating security key. Takes from appsettings.json file, which we've added the Token part to.
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(
-                _config.GetSection("AppSettings:Token").Value));
+            // Creating security key. Takes from appsettings.json file, which we've added the Token part to.
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(
+                    _config.GetSection("AppSettings:Token").Value));
 
-        // Hashing the key
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+            // Hashing the key
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
-        // Create the token descriptor where we pass the claims, expiry date (24 hrs), and the credentials
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
-            Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.Now.AddDays(1),
-            SigningCredentials = creds
-        };
+            // Create the token descriptor where we pass the claims, expiry date (24 hrs), and the credentials
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.Now.AddDays(1),
+                SigningCredentials = creds
+            };
 
-        // Creating a jwt security token handler object
-        var tokenHandler = new JwtSecurityTokenHandler();
+            // Creating a jwt security token handler object
+            var tokenHandler = new JwtSecurityTokenHandler();
 
-        // Store it in the token variable
-        var token = tokenHandler.CreateToken(tokenDescriptor);
+            // Store it in the token variable
+            var token = tokenHandler.CreateToken(tokenDescriptor);
 
-        var user = _mapper.Map<UserForListDto>(userFromRepo);
+            var user = _mapper.Map<UserForListDto>(userFromRepo);
             // In the response, we send Ok + the new token as a new object
             return Ok(new
             {
@@ -94,6 +91,6 @@ namespace DatingApp.API.Controllers
                 user
             });
 
+        }
     }
-}
 }

@@ -19,7 +19,7 @@ export class AuthService {
 
   constructor(private http: HttpClient) { }
 
-  changeMemberPhoto(photoUrl: string){
+  changeMemberPhoto(photoUrl: string) {
     this.photoUrl.next(photoUrl);
   }
 
@@ -38,8 +38,8 @@ export class AuthService {
         })
       );
   }
-  register(model: any) {
-    return this.http.post(this.baseUrl + 'register', model);
+  register(user: User) {
+    return this.http.post(this.baseUrl + 'register', user);
   }
 
   loggedIn() {
