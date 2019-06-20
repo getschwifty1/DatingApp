@@ -73,7 +73,7 @@ export class PhotoEditorComponent implements OnInit {
       this.authService.currentUser.photoUrl = photo.url;
       localStorage.setItem('user', JSON.stringify(this.authService.currentUser));
     }, error => {
-      this.alertify.error(error)
+      this.alertify.error(error);
     });
   }
 
